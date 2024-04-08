@@ -43,8 +43,25 @@ function findSingleCellState(coordinateY = Int, coordinateX = Int, gameGrid = ar
     // Adds all of the values to display the status of a cell
     result.push(coordinateX)
     result.push(coordinateY)
-    result.push(cellState)
     result.push(cell)
+    return result
+}
+
+function findSurroundingCellState(coordinateY = Int, coordinateX = Int, gameGrid = arr) {
+    // Array result with the values of every cell in a square
+    let result = []
+    // Finds the state of the 3 cells above the origin cell
+    for(let i = 0; i < 3; i++) {
+        result.push(findSingleCellState(coordinateY-1, (coordinateX-(i-1)), gameGrid))
+    }
+    // Finds the state of the 3 cells in line with the origin cell including itself
+    for(let i = 0; i < 3; i++) {
+        result.push(findSingleCellState(coordinateY, (coordinateX-(i-1)), gameGrid))
+    }
+    // Finds the state of the 3 cells below the origin cell
+    for(let i = 0; i < 3; i++) {
+        result.push(findSingleCellState(coordinateY+1, (coordinateX-(i-1)), gameGrid))
+    }
     return result
 }
 
@@ -57,3 +74,4 @@ gameGrid = [[0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[0
 gameGrid.forEach(v=>console.log(...v))
 
 console.log("Define single cell state:", findSingleCellState(3, 6, gameGrid))
+console.log("Define surrounding cells state:", findSurroundingCellState(3, 6, gameGrid))
