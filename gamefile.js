@@ -7,7 +7,16 @@ let sizeY = 10
 let liveCell = 1
 let deadCell = 0
 
+// Cell growth values
+let cellSolitude = 0
+let cellSurvival = 1
+let cellGrowth = 2
+let cellCrowd = 3
+
 let turnCount = 0
+
+// Initialise readline
+const prompt = require("prompt-sync")();
 
 // Rules - https://playgameoflife.com/info
 
@@ -26,7 +35,14 @@ function makeGameGrid(sizeY = Int, sizeX = Int) {
     return result
 }
 
-function findSingleCellState(coordinateY = Int, coordinateX = Int, gameGrid = arr) {
+function alterCellState(coordinateX = Int, coordinateY = Int, newState = Int, gameGrid) {
+    // Adjusts the coordinates to account for index starting at 0
+    let indexCoordinateY = coordinateY-1
+    let indexCoordinateX = coordinateX-1
+    gameGrid[indexCoordinateY][indexCoordinateY] = newState
+}
+
+function findSingleCellState(coordinateX = Int, coordinateY = Int, gameGrid = arr) {
     // Adjusts the coordinates to account for index starting at 0
     let indexCoordinateY = coordinateY-1
     let indexCoordinateX = coordinateX-1
@@ -52,17 +68,57 @@ function findSurroundingCellState(coordinateY = Int, coordinateX = Int, gameGrid
     let result = []
     // Finds the state of the 3 cells above the origin cell
     for(let i = 0; i < 3; i++) {
-        result.push(findSingleCellState(coordinateY-1, (coordinateX-(i-1)), gameGrid))
+        result.push(findSingleCellState((coordinateX-(i-1)), coordinateY-1, gameGrid))
     }
     // Finds the state of the 3 cells in line with the origin cell including itself
     for(let i = 0; i < 3; i++) {
-        result.push(findSingleCellState(coordinateY, (coordinateX-(i-1)), gameGrid))
+        result.push(findSingleCellState((coordinateX-(i-1)), coordinateY, gameGrid))
     }
     // Finds the state of the 3 cells below the origin cell
     for(let i = 0; i < 3; i++) {
-        result.push(findSingleCellState(coordinateY+1, (coordinateX-(i-1)), gameGrid))
+        result.push(findSingleCellState((coordinateX-(i-1)), coordinateY+1, gameGrid))
     }
     return result
+}
+
+function findCellConsequence(squareValues = arr) {
+    let mainCell = squareValues[4]
+    let livingCells = []
+    let result = []
+    for(i in squareValues) {
+        if(!squareValues[4]) {
+            if(squareValues[i][2] == 1)
+            livingCells.push(squareValues[i])
+        }
+    }
+    if(mainCell == 1) {
+        if(livingCells.length <= 1) {
+            result = cellSolitude
+        }
+        else if(livingCells.length == 2 || livingCells.length == 3) {
+            result = cellSurvival
+        }
+        else if(livingCells.length >= 4) {
+            result = cellCrowd
+        }
+
+        if(result == cellSolitude || result == cellCrowd) {
+            alterCellState(mainCell[0], mainCell[1], 0, gameGrid)
+        }
+    }
+    else if(mainCell == 0) {
+        if(livingCells.length == 3) {
+            result = cellGrowth
+        }
+
+        if(result == cellGrowth) {
+            alterCellState(mainCell[0], mainCell[1], 1, gameGrid)
+        }
+    }
+}
+
+function displayGameGrid(gameGrid = arr) {
+    gameGrid.forEach(v=>console.log(...v))
 }
 
 // gameGrid = makeGameGrid(sizeX, sizeY)
@@ -70,8 +126,18 @@ function findSurroundingCellState(coordinateY = Int, coordinateX = Int, gameGrid
 // Test Grid
 gameGrid = [[0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,1,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]]
 
-// Displays grid in a readable format
-gameGrid.forEach(v=>console.log(...v))
+let thisSquareState = (findSurroundingCellState(6, 3, gameGrid))
+thisSquareState.forEach(v=>console.log(...v))
 
-console.log("Define single cell state:", findSingleCellState(3, 6, gameGrid))
-console.log("Define surrounding cells state:", findSurroundingCellState(3, 6, gameGrid))
+runGameLoop(turnCount, gameGrid)
+
+function runGameLoop(turnCount = Int, gameGrid) {
+    // Displays grid in a readable format
+    let answer = "yes"
+    while(answer == "yes") {
+        console.log("- - - - - - - - - -")
+        displayGameGrid(gameGrid)
+
+        answer.toLowerCase = prompt("Would you like to continue? (Yes/No): ");
+    }
+}
